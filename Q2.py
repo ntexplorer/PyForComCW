@@ -75,7 +75,7 @@ class Processor():
 
     # this function takes two args, the actual time for task entering the processor
     def proceed_task(self, time, task):
-        print(f"** {time} : Task {task[1]} assigned to processor {self.id}")
+        print(f"** {time} : Task {task[1]} assigned to processor {self.id}.")
         self.status = False
         self.task = task
         # the end time of task is always the actual entering time + duration.
