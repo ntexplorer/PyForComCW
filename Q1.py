@@ -42,8 +42,8 @@ c = conn.cursor()
 # create another column called PID in case same ID generated
 c.execute('''CREATE TABLE tasks
 (pid INTEGER PRIMARY KEY UNIQUE NOT NULL, id TEXT NOT NULL, arrival INTEGER NOT NULL, duration INTEGER NOT NULL)''')
-task = task_gen()  # Generate data(the task list)
+task_list = task_gen()  # Generate data(the task list)
 # Insert data(the task list) into the database
-c.executemany("INSERT INTO tasks VALUES (?, ?, ?, ?)", task)
+c.executemany("INSERT INTO tasks VALUES (?, ?, ?, ?)", task_list)
 conn.commit()
 conn.close()

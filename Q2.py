@@ -1,5 +1,4 @@
-from queue import Queue
-from queue import LifoQueue
+from queue import Queue, LifoQueue
 import sqlite3
 import re
 
@@ -46,7 +45,7 @@ class Validator():
         self.__lower = re.compile(r'[a-z]+')
         self.__number = re.compile(r'[0-9]+')
         self.__special = re.compile(r'[*&#@_-]+')
-        # add 1 to valid count if meets one of the requirements
+        # add 1 to valid_count if meets one of the requirements
         if self.__upper.search(input):
             self.__valid_count += 1
         if self.__lower.search(input):
@@ -61,10 +60,11 @@ class Validator():
         return False
 
 
-# Processor provide the method to deal with tasks
+# Processor deals with tasks
 class Processor():
     def __init__(self, id,):
         self.id = id
+        # Attribute status is True if the processor is available
         self.status = True
         # Attribute task contains the task entering the processor
         self.task = ()
@@ -85,11 +85,11 @@ class Processor():
     def task_done(self):
         print(f"** {self.end_time} : Task {self.task[1]} completed.")
         self.status = True
-        # set the task container to empty tuple
+        # reset the task container to empty tuple
         self.task = ()
 
 
-# Update time
+# clock for updating time
 class Clock():
     def __init__(self):
         # Attribute time to update the time of the next event
@@ -108,19 +108,19 @@ class Clock():
     def get_next_arrival(self, task):
         self.next_arrival_time = task[2]
 
-    # add the task end_time into the end_time list
+    # append the task end_time to the end_time list
     def get_next_end(self, time):
         self.end_time_ls.append(time)
 
-    # when a task is finished in processor, delete its end_time in the end_time list
+    # when a task is finished in processor, delete its end_time from the end_time list
     def del_next_end(self):
         self.end_time_ls.remove(self.time)
 
 
-# This class is basically the whole system
+# This class is basically the whole system to proceed the simulation
 class SchedulerService():
     def __init__(self):
-        # Initialization with 3 processors, 1 clock, task control and validator
+        # Initialization with 3 processors, 1 clock, task storage and a validator
         self.processor1 = Processor(1)
         self.processor2 = Processor(2)
         self.processor3 = Processor(3)
@@ -197,7 +197,7 @@ class SchedulerService():
                 if min(self.clock.end_time_ls) <= self.clock.next_arrival_time:
                     # put the new task back into enter_queue
                     self.enter_queue.put(self.current_task)
-                    # the next event would be task finishing, update time
+                    # the next event would be task finishing, update the time
                     self.clock.time = min(self.clock.end_time_ls)
                     # find which processor is finishing the task
                     self.processor_found = self.find_processor(
@@ -209,7 +209,8 @@ class SchedulerService():
                     Onhold queue follows the FIFO rule.
                     If there's any task in the onhold queue,
                     the first task got into the queue would be retrieved into
-                    the available processor immediately.
+                    the available processor immediately after there's a task
+                    finished in the processor.
                     '''
                     if not self.onhold_queue.empty():
                         self.first_onhold = self.onhold_queue.get()
@@ -247,7 +248,7 @@ class SchedulerService():
                 If there's nothing in all the processors
                 the next event will always be the task entering the system
                 then proceed a validation, assign the task to processor1
-                (because all the processors are available)
+                (since all the processors are available)
                 '''
             else:
                 # uncomment the line below to debug
