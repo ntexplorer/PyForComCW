@@ -62,7 +62,7 @@ class Validator():
 
 # Processor deals with tasks
 class Processor():
-    def __init__(self, id,):
+    def __init__(self, id):
         self.id = id
         # Attribute status is True if the processor is available
         self.status = True
@@ -97,7 +97,7 @@ class Clock():
         # next_arrival_time for the time that next task enters the system
         self.next_arrival_time = 0
         '''
-        Set up a list to store all the end time in processors.
+        Create a list to store all the end time of tasks in processors.
         If the list is empty, it means there's no task in any processor.
         Otherwise the minimum value of the list would be the end time of
         the next finishing task.
@@ -176,6 +176,10 @@ class SchedulerService():
         print(self.clock.time)
 
     def proceed(self):
+        '''
+        The key to create this simulation system is to figure out which event
+        would happen next.
+        '''
         self.p_sys_init()
         self.task.put_enter_queue(self.task_list)
         # Check if all tasks have entered the system
@@ -186,15 +190,15 @@ class SchedulerService():
             self.clock.get_next_arrival(self.current_task)
             # if there's at least one task in the processor
             if self.clock.end_time_ls:
-                '''
-                If the minimum value in end_time_ls is smaller than the arrival
-                time of next task, then the task would be finished in the processor
-                before the new one enters the system.
-                So the system should deal with the task in the processor first.
-                '''
                 # uncomment the line below to debug
                 # self.check()
                 if min(self.clock.end_time_ls) <= self.clock.next_arrival_time:
+                    '''
+                    If the minimum value in end_time_ls is smaller than the arrival
+                    time of next task, then the task would finish in the processor
+                    before the new one enters the system.
+                    So the system should deal with the task in the processor first.
+                    '''
                     # put the new task back into enter_queue
                     self.enter_queue.put(self.current_task)
                     # the next event would be task finishing, update the time
@@ -205,18 +209,20 @@ class SchedulerService():
                     # reset the processor and delete the end_time from the end_time list
                     self.processor_found.task_done()
                     self.clock.del_next_end()
-                    '''
-                    Onhold queue follows the FIFO rule.
-                    If there's any task in the onhold queue,
-                    the first task got into the queue would be retrieved into
-                    the available processor immediately after there's a task
-                    finished in the processor.
-                    '''
                     if not self.onhold_queue.empty():
+                        '''
+                        Onhold queue follows the FIFO rule.
+                        If there's any task in the onhold queue,
+                        the first task got into the queue would be retrieved into
+                        the available processor immediately after there's a task
+                        finished in the processor.
+                        '''
                         self.first_onhold = self.onhold_queue.get()
                         self.processor_found.proceed_task(
                             self.clock.time, self.first_onhold)
                         self.clock.get_next_end(self.processor_found.end_time)
+
+                else:
                     '''
                     If the arrival time of next task is smaller, then the next event
                     would be the arrival of the task (entering the system)
@@ -224,7 +230,6 @@ class SchedulerService():
                     if all the processors are busy, put it into the onhold_queue.
                     Otherwise discard the task.
                     '''
-                else:
                     self.p_enter_system(self.current_task)
                     if self.get_valid_result(self.current_task):
                         self.p_task_accepted(self.current_task)
@@ -244,13 +249,13 @@ class SchedulerService():
                             self.task.put_onhold_queue(self.current_task)
                     else:
                         self.p_task_discard(self.current_task)
+            else:
                 '''
                 If there's nothing in all the processors
                 the next event will always be the task entering the system
                 then proceed a validation, assign the task to processor1
                 (since all the processors are available)
                 '''
-            else:
                 # uncomment the line below to debug
                 # self.check()
                 self.p_enter_system(self.current_task)
